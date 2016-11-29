@@ -1,0 +1,15 @@
+//
+//  tryFunNewPrefix.pch
+//  tryFunNew
+//
+//  Created by iOSBacon on 2016/11/29.
+//  Copyright © 2016年 iOSBacon. All rights reserved.
+//
+
+#ifndef tryFunNewPrefix_pch
+#define tryFunNewPrefix_pch
+
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#endif /* tryFunNewPrefix_pch */
