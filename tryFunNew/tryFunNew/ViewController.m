@@ -7,8 +7,13 @@
 //
 
 #import "ViewController.h"
+#import "TimerShareManager.h"
 
-@interface ViewController ()
+@interface ViewController ()<TimerShareManagerDelegate>
+
+@property (weak, nonatomic) IBOutlet UILabel *timeLabel;
+
+@property (strong, nonatomic) TimerShareManager * timerShare;
 
 @end
 
@@ -16,9 +21,23 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
+    _timerShare = [TimerShareManager sharedInstance];
+    _timerShare.currentTimerType = NXTimerTypeEngBind;
+    _timerShare.timerDelegate = self;
+    if (_timerShare.isExistTimer) {
+        _timeLabel.text = [NSString stringWithFormat:@"%@", @(_timerShare.leftCount)];
+    } else {
+        _timeLabel.text = [NSString stringWithFormat:@"%@", @(15)];
+    }
 }
 
+- (IBAction)fireClick:(UIButton *)sender {
+    [_timerShare createTimerWithTimerType:NXTimerTypeEngBind totalTime:15 timeInterval:1];
+}
+
+- (void)timerWithLeftCount:(NSUInteger)interval {
+    [_timeLabel setText:[NSString stringWithFormat:@"%@", @(interval)]];
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
