@@ -30,26 +30,17 @@ static TimerShareManager * _instance;
     return _instance;
 }    
 
-- (NSTimer *)getTimerWithTimerType:(NXTimerType)timerType {
-    NSDictionary * dict = [_muDict objectForKey:@(timerType)];
-    if (dict != nil) {
-        return [dict objectForKey:_timerKey];
+- (BOOL)isExistTimer {
+    if (_typeKey.length > 0 && _currentTimerType != 0) {
+        return [[_muDict objectForKey:@(_currentTimerType)] objectForKey:_typeKey] != nil;
     } else {
-        return nil;
+        return NO;
     }
 }
 
-- (BOOL)isExistTimer {
-    return [self isExistTimerWithTimerType:_currentTimerType];
-}
-
-- (BOOL)isExistTimerWithTimerType:(NXTimerType)timerType {
-    return [self getTimerWithTimerType:timerType] != nil;
-}
-
 - (NSUInteger)leftCount {
-    NSMutableDictionary * tmpMuDict = [_muDict objectForKey:@(self.currentTimerType)];
-    if (tmpMuDict != nil) {
+    if (self.isExistTimer) {
+        NSDictionary * tmpMuDict = [[_muDict objectForKey:@(_currentTimerType)] objectForKey:_typeKey];
         return [[tmpMuDict objectForKey:_timerCountKey] unsignedLongValue];
     } else {
         return 0;
@@ -57,39 +48,50 @@ static TimerShareManager * _instance;
 }
 
 - (BOOL)createTimerWithTimerType:(NXTimerType)timerType typeKey:(NSString *)typeKey totalTime:(NSUInteger)totalTime timeInterval:(NSUInteger)interval{
-    self.currentTimerType = timerType;
-    if ([self isExistTimerWithTimerType:timerType]) {
+    _currentTimerType = timerType;
+    _typeKey = typeKey;
+    if (_typeKey.length > 0 && _currentTimerType != 0) {
+        if (self.isExistTimer) {
+            return YES;
+        } else {
+            NSTimer * nxTimer = [NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(timeRoll:) userInfo:nil repeats:YES];
+            NSMutableDictionary * tmpMuDict_2 = [NSMutableDictionary new];
+            NSMutableDictionary * tmpMuDict_3 = [NSMutableDictionary new];
+            [tmpMuDict_3 setObject:@(totalTime) forKey:_timerCountKey];
+            [tmpMuDict_3 setObject:nxTimer forKey:_timerKey];
+            [tmpMuDict_2 setObject:tmpMuDict_3 forKey:typeKey];
+            [_muDict setObject:tmpMuDict_2 forKey:@(timerType)];
+        }
         return YES;
     } else {
-        NSTimer * nxTimer = [NSTimer scheduledTimerWithTimeInterval:interval target:self selector:@selector(timeRoll:) userInfo:nil repeats:YES];
-        NSMutableDictionary * tmpMuDict = [NSMutableDictionary new];
-        [tmpMuDict setObject:@(totalTime) forKey:_timerCountKey];
-        [tmpMuDict setObject:nxTimer forKey:_timerKey];
-        [_muDict setObject:tmpMuDict forKey:@(timerType)];
+        return NO;
     }
-    return YES;
 }
 
 - (void)timeRoll:(NSTimer *)paraTimer {
-    NSMutableDictionary * tmpMuDict = [_muDict objectForKey:@(self.currentTimerType)];
-    NSUInteger leftCount = [[tmpMuDict objectForKey:_timerCountKey] unsignedLongValue];
+    NSMutableDictionary * tmpMuDict_2 = [_muDict objectForKey:@(_currentTimerType)];
+    NSMutableDictionary * tmpMuDict_3 = [tmpMuDict_2 objectForKey:_typeKey];
+    NSUInteger leftCount = [[tmpMuDict_3 objectForKey:_timerCountKey] unsignedLongValue];
     if (leftCount == 1) {
         [paraTimer invalidate];
     }
+    {
+        leftCount --;
+        [tmpMuDict_3 setObject:@(leftCount) forKey:_timerCountKey];
+        [tmpMuDict_2 setObject:tmpMuDict_3 forKey:_typeKey];
+        [_muDict setObject:tmpMuDict_2 forKey:@(_currentTimerType)];
+    }
     if (leftCount == 0) {
         [paraTimer invalidate];
-        [tmpMuDict removeAllObjects];
+        [tmpMuDict_3 removeAllObjects];
+        [tmpMuDict_2 removeObjectForKey:_typeKey];
         paraTimer = nil;
         [_muDict removeObjectForKey:@(_currentTimerType)];
-    } else {
-        leftCount --;
-        [tmpMuDict setObject:@(leftCount) forKey:_timerCountKey];
-        [_muDict setObject:tmpMuDict forKey:@(_currentTimerType)];
     }
     if ([self.timerDelegate respondsToSelector:@selector(timerWithLeftCount:)]) {
         [self.timerDelegate timerWithLeftCount:leftCount];
     }
-    NSLog(@"%s --- leftCount = %lu",__FUNCTION__, (unsigned long)leftCount);
+    NSLog(@"%s --- leftCount = %lu", __FUNCTION__, (unsigned long)leftCount);
 }
 
 - (instancetype)init

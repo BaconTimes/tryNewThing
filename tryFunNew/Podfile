@@ -4,9 +4,10 @@
 target 'tryFunNew' do
   # Uncomment this line if you're using Swift or would like to use dynamic frameworks
   # use_frameworks!
-   pod 'AsyncDisplayKit', '~> 2.0-beta.1'
   # Pods for tryFunNew
   pod 'Masonry', '~> 1.0.2'
   pod 'Reveal-iOS-SDK', '~> 1.6.2'
+  pod 'MagicalRecord', '~> 2.3.2'
+  pod 'MyLayout', '~> 1.3.8'
 
 end

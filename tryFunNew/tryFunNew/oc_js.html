@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+	<title>bacon</title>
+	<script type="text/javascript">
+		function showAlert(message) {
+			alert(message);
+			return "erhuo";
+		}
+
+		function loadURL(url) {
+			var iFrame;
+			iFrame = document.createElement("iframe");
+			// console.log(iFrame);
+            iFrame.setAttribute("src", url);
+			document.body.appendChild(iFrame);
+			iFrame.parentNode.removeChild(iFrame)
+			iFrame = null;
+		}
+		function firstClick() {
+            loadURL("firstClick://shareClick?title=分享的标题&content=分享的内容&url=链接地址&imagePath=图片地址");
+		}
+	</script>
+</head>
+<body>
+	<h2>这是第一种方式</h2>
+	<br>
+	<br>
+	<button type="button" onclick="firstClick()">Click Me!</button>
+</body>
+</html>

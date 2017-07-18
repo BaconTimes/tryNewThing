@@ -7,6 +7,8 @@
 //
 
 #import "AppDelegate.h"
+#import <MagicalRecord/MagicalRecord.h>
+//#import "Wa"
 
 @interface AppDelegate ()
 
@@ -16,7 +18,18 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    [MagicalRecord setupCoreDataStackWithAutoMigratingSqliteStoreNamed:@"ZNT_TEST.sqlite"];
+    [MagicalRecord setLoggingLevel:MagicalRecordLoggingLevelWarn];
+    
+    
+    
+    NSString * path = [[NSBundle mainBundle] pathForResource:@"TestModelOne" ofType:@"momd"];
+    if (path == nil) {
+        path = [[NSBundle mainBundle] pathForResource:@"TestModelOne" ofType:@"mom"];
+    }
+    NSLog(@"%@", path);
+    //    NSManagedObjectModel * model = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
+    //    if (model != nil) return model;
     return YES;
 }
 
