@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface GlodModel : NSObject
+@interface GlodModel : NSObject<YYModel>
 
 @property (nonatomic, copy) NSString * targetId;
 

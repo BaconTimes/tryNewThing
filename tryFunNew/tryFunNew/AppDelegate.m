@@ -8,7 +8,6 @@
 
 #import "AppDelegate.h"
 #import <MagicalRecord/MagicalRecord.h>
-//#import "Wa"
 
 @interface AppDelegate ()
 
@@ -23,16 +22,13 @@
     
     
     
-    NSString * path = [[NSBundle mainBundle] pathForResource:@"TestModelOne" ofType:@"momd"];
-    if (path == nil) {
-        path = [[NSBundle mainBundle] pathForResource:@"TestModelOne" ofType:@"mom"];
-    }
-    NSLog(@"%@", path);
-    //    NSManagedObjectModel * model = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
-    //    if (model != nil) return model;
+//    NSString * path = [[NSBundle mainBundle] pathForResource:@"TestModelOne" ofType:@"momd"];
+//    if (path == nil) {
+//        path = [[NSBundle mainBundle] pathForResource:@"TestModelOne" ofType:@"mom"];
+//    }
+//    NSLog(@"%@", path);
     return YES;
 }
-
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.

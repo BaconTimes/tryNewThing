@@ -10,6 +10,8 @@
 #import "ViewController.h"
 #import "ThirdViewController.h"
 #import "GlodModel.h"
+#import "GoldDataCenter.h"
+#import "CircleMainViewController.h"
 
 dispatch_time_t getDispatchTimeByDate(NSDate * date)
 {
@@ -38,17 +40,80 @@ dispatch_time_t getDispatchTimeByDate(NSDate * date)
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    [self createData];
+    self.automaticallyAdjustsScrollViewInsets = NO;
     _mainTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 64, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 64) style:UITableViewStylePlain];
     [_mainTableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"UITableViewCell"];
     _mainTableView.delegate = self;
     _mainTableView.dataSource = self;
     _mainTableView.tableFooterView = [UIView new];
     [self.view addSubview:_mainTableView];
+    [self refreshData];
+}
+
+- (void)createData {
+    _dataSource = [NSMutableArray new];
+    NSMutableArray * muArray = [[NSMutableArray alloc] init];
+    for (NSInteger i = 0; i < 5; i++) {
+        GlodModel * gModel = [[GlodModel alloc] init];
+        gModel.targetId = [NSString stringWithFormat:@"41234%@", @(i)];
+        gModel.name = [NSString stringWithFormat:@"name%@", @(i)];
+        gModel.height = 170 + i;
+        gModel.width = 1700 + i;
+        gModel.weight = 65 + i;
+        [_dataSource addObject:gModel];
+        [GoldDataCenter insertGold:gModel];
+        [muArray addObject:[gModel modelToJSONString]];
+    }
+    
+}
+
+- (IBAction)rightAction:(UIBarButtonItem *)sender {
+    NSUInteger baseNum = 15;
+    for (NSInteger i = 0; i < 5000; i++, baseNum++) {
+        GlodModel * gModel = [[GlodModel alloc] init];
+        gModel.targetId = [NSString stringWithFormat:@"41234%@", @(baseNum)];
+        gModel.name = [NSString stringWithFormat:@"name%@", @(baseNum)];
+        gModel.height = 170 + i;
+        gModel.width = 1700 + i;
+        gModel.weight = 65 + i;
+        [GoldDataCenter insertGold:gModel];
+    }
+}
+
+- (IBAction)addAction:(UIBarButtonItem *)sender {
+    for (NSInteger i = 0; i < 5000; i++) {
+        GlodModel * gModel = [[GlodModel alloc] init];
+        gModel.targetId = [NSString stringWithFormat:@"41234%@", @(i)];
+        gModel.name = [NSString stringWithFormat:@"name%@", @(i)];
+        gModel.height = 170 + i;
+        gModel.width = 1700 + i;
+        gModel.weight = 65 + i;
+        [_dataSource addObject:gModel];
+    }
+    [self refreshData];
+}
+- (IBAction)trashAction:(id)sender {
+    NSUInteger i = 5;
+    do {
+        [_dataSource removeObjectAtIndex:0];
+    } while (i--);
+    [self refreshData];
+}
+
+- (void)refreshData {
+    [_mainTableView reloadData];
+    self.title = [NSString stringWithFormat:@"%@", @(_dataSource.count)];
 }
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return _dataSource.count;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
+//    [self.navigationController pushViewController:[CircleMainViewController new] animated:YES];
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {

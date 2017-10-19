@@ -12,6 +12,7 @@
 #import "UIImage+localImage.h"
 #import <YYKit.h>
 #import <mach/mach_host.h>
+#import "TestRequest.h"
 
 @interface TestCell : UITableViewCell
 
@@ -26,6 +27,12 @@
     if (self) {
         _label = [[YYLabel alloc] initWithFrame:CGRectMake(0, 0, ([UIScreen mainScreen].bounds.size.width), 0)];
         _label.displaysAsynchronously = YES;
+        _label.ignoreCommonProperties = YES;
+        _label.textTapAction = ^(UIView * _Nonnull containerView, NSAttributedString * _Nonnull text, NSRange range, CGRect rect) {
+            NSAttributedString * attr = [text attributedSubstringFromRange:range];
+            YYTextHighlight * hight =  attr.attributes[YYTextHighlightAttributeName];
+            NSLog(@"%@", hight.userInfo);
+        };
         [self.contentView addSubview:_label];
     }
     return self;
@@ -51,21 +58,9 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
     self.view.backgroundColor = [UIColor whiteColor];
-    UIButton * btn = [UIButton buttonWithType:UIButtonTypeCustom];
-    
-    [self.view addSubview:btn];
-    [btn setBackgroundColor:[UIColor redColor]];
-    [btn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.center.mas_equalTo(0);
-        make.size.mas_equalTo(CGSizeMake(100, 100));
-    }];
-    NSString * imgPath = [[NSBundle mainBundle] pathForResource:@"emoji000.png" ofType:nil];
-    [btn.imageView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.center.mas_equalTo(0);
-        make.size.mas_equalTo(CGSizeMake(80, 80));
-    }];
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    [self asycLabel];
 }
 
 - (UIImage*)imageCompressWithSimple:(UIImage*)image scaledToSize:(CGSize)size
@@ -159,7 +154,7 @@
 }
 
 - (void)asycLabel {
-    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 64, 414, ([UIScreen mainScreen].bounds.size.height) - 64) style:UITableViewStylePlain];
+    _tableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 64, [UIScreen mainScreen].bounds.size.width, ([UIScreen mainScreen].bounds.size.height) - 64) style:UITableViewStylePlain];
     [_tableView registerClass:[TestCell class] forCellReuseIdentifier:@"TestCell"];
     _tableView.delegate = self;
     _tableView.dataSource = self;
@@ -167,13 +162,42 @@
     
     _dataSource = [[NSMutableArray alloc] init];
     _layouts = [[NSMutableArray alloc] init];
-    for (int i = 0; i < 300; i++) {
-        NSString *str = [NSString stringWithFormat:@"%d 永和九年， 岁在癸丑， 暮春之初， 会于会稽山阴之兰亭， 修禊事也。 群贤毕至， 少长咸集。 此地有崇山峻岭， 茂林修竹， 又有清流激湍， 映带左右， 引以为流觞曲水， 列坐其次。 虽无丝竹管弦之盛，🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖 一觞一咏， 亦足以畅叙幽情。是日也， 天朗气清， 惠风和畅。 仰观宇宙之大， 俯察品类之盛， 所以游目骋怀， 足以极视听之娱， 信可乐也。",i];
+    
+    NSString * bundlePath = [[NSBundle mainBundle] pathForResource:@"emotion" ofType:@"bundle"];
+    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
+    NSString * plistPath = [[NSBundle mainBundle] pathForResource:@"emoji" ofType:@"plist"];
+    NSDictionary * dict = [NSDictionary dictionaryWithContentsOfFile:plistPath];
+    NSRegularExpression * reg = [NSRegularExpression regularExpressionWithPattern:@"\\[[a-zA-Z0-9\\u4e00-\\u9fa5]+\\]" options:NSRegularExpressionCaseInsensitive error:nil];
+    NSRegularExpression *netReg = [NSRegularExpression regularExpressionWithPattern:@"(((http[s]{0,1}|ftp)://[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?)|(www.[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?))|((https?|ftp|news)://)?([a-z]([a-z0-9\\-]*[\\.。])+([a-z]{2}|aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel)|(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))(/[a-z0-9_\\-\\.~]+)*(/([a-z0-9_\\-\\.]*)(\\?[a-z0-9+_\\-\\.%=&]*)?)?(#[a-z][a-z0-9_]*)?$" options:NSRegularExpressionCaseInsensitive error:nil];
+    for (int i = 0; i < 60; i++) {
+        NSString *str = [NSString stringWithFormat:@"%d 永和九年， [委屈]岁在癸丑， [大哭]暮春之初， 会于会稽山阴之兰亭， 💗💛💙🏨🏦🏫修禊事也。[调皮] 群贤毕至，[可怜] 少长咸集。 www.baidu.com此地有崇山峻岭， 茂林修竹， 又有清流激湍， 映带左右， 引以为流觞曲水， 列坐其次。 虽无丝竹管弦之盛，🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖 一觞一咏， 亦足以畅叙幽情。是日也， 天朗气清， 惠风和畅。 仰观宇宙之大， 俯察品类之盛， 所以游目骋怀， 足以极视听之娱， 信可乐也。",i];
         //😀😖😐😣😡🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖🚌🚋🎊💖💗💛💙🏨🏦🏫
         NSMutableAttributedString * muAttr = [[NSMutableAttributedString alloc] initWithString:str];
+        NSArray<NSTextCheckingResult *> * results = [reg matchesInString:str options:NSMatchingWithTransparentBounds range:NSMakeRange(0, str.length)];
+        for (NSInteger i = results.count - 1; i >= 0; i--) {
+            NSTextCheckingResult * result = results[i];
+            NSString * resultString = [str substringWithRange:result.range];
+            NSString * imgName = dict[resultString];
+            if (imgName) {
+                NSString * img_path = [bundle pathForResource:imgName ofType:@"png"];
+                UIImage * img = [UIImage imageWithContentsOfFile:img_path];
+                YYAnimatedImageView * imageView = [[YYAnimatedImageView alloc] initWithImage:img];
+                imageView.frame = CGRectMake(0, 0, img.size.width, img.size.height);
+                NSAttributedString * imgAttr = [NSAttributedString attachmentStringWithContent:imageView contentMode:UIViewContentModeScaleAspectFill attachmentSize:CGSizeMake(15, 15) alignToFont:[UIFont systemFontOfSize:14] alignment:YYTextVerticalAlignmentCenter];
+                [muAttr replaceCharactersInRange:result.range withAttributedString:imgAttr];
+            }
+        }
+        str = muAttr.string;
+        results = [netReg matchesInString:str options:NSMatchingWithTransparentBounds range:NSMakeRange(0, str.length)];
+        for (NSInteger i = results.count - 1; i >= 0; i--) {
+            NSTextCheckingResult * result = results[i];
+            [muAttr setTextHighlightRange:result.range color:[UIColor redColor] backgroundColor:[UIColor cyanColor] userInfo:@{@1:@1}];
+        }
+
+        
         [muAttr setFont:[UIFont systemFontOfSize:15]];
         muAttr.lineBreakMode = NSLineBreakByWordWrapping;
-        YYTextContainer * container = [YYTextContainer containerWithSize:CGSizeMake(414, 9999)];
+        YYTextContainer * container = [YYTextContainer containerWithSize:CGSizeMake([UIScreen mainScreen].bounds.size.width, CGFLOAT_MAX)];
         container.maximumNumberOfRows = 4;
         YYTextLayout * layout = [YYTextLayout layoutWithContainer:container text:muAttr];
         [_dataSource addObject:muAttr];
@@ -221,10 +245,9 @@
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     static NSString * identifier = @"TestCell";
     TestCell * cell = [tableView dequeueReusableCellWithIdentifier:identifier forIndexPath:indexPath];
-//    cell.label.layer.contents = nil;
     YYTextLayout * layout = _layouts[indexPath.row];
+    cell.label.size = layout.textBoundingSize;
     cell.label.textLayout = layout;
-    cell.label.size = cell.label.textLayout.textBoundingSize;
     return cell;
 }
 

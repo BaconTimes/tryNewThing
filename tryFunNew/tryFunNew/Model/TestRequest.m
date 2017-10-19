@@ -11,7 +11,14 @@
 @implementation TestRequest
 
 + (id)getDataWithKey:(NSString *)key {
-    NSURL * url = [NSURL URLWithString:[NSString stringWithFormat:@"http://127.0.0.1:5000/%@", key]];
+    
+#if TARGET_OS_SIMULATOR
+    NSString * netUrl = @"http://127.0.0.1:5000";
+#else
+    NSString * netUrl = @"http://10.100.23.49:5000";
+#endif
+
+    NSURL * url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@",netUrl, key]];
     NSURLRequest * request = [NSURLRequest requestWithURL:url cachePolicy:0 timeoutInterval:3];
     NSError * error = nil;
     NSData * data = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:&error];
