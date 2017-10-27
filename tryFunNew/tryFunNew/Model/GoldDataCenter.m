@@ -8,13 +8,30 @@
 
 #import "GoldDataCenter.h"
 
-@implementation GoldDataCenter
+@implementation GoldDataCenter{
+    NSManagedObjectContext * _mainThreadContext;
+    NSManagedObjectContext * _backgroundObjectContext;
+    NSPersistentStoreCoordinator * _storeCoordinator;
+}
 
 +(void)insertGold:(GlodModel *)glodModel {
     if (!glodModel.targetId) return;
-    Gold * gold = [Gold MR_findFirstOrCreateByAttribute:@"targetId" withValue:glodModel.targetId];
-    [MagicalRecord saveWithBlockAndWait:^(NSManagedObjectContext * _Nonnull localContext) {
+    [MagicalRecord saveWithBlock:^(NSManagedObjectContext * _Nonnull localContext) {
+        NSLog(@"NSThread currentThread = %@", [NSThread currentThread]);
+        Gold * gold = [Gold MR_findFirstOrCreateByAttribute:@"targetId" withValue:glodModel.targetId inContext:localContext];
         [self configureEntity:gold withModel:glodModel];
+    } completion:^(BOOL contextDidSave, NSError * _Nullable error) {
+        NSLog(@"[Gold MR_countOfEntities] = %@", @([Gold MR_countOfEntities]));
+    }];
+}
+
++ (void)insertGolds:(NSArray<GlodModel *> *)goldArray {
+    if (goldArray.count == 0) return;
+    NSManagedObjectContext * moc = [NSManagedObjectContext MR_context];
+    [[NSNotificationCenter defaultCenter] addObserverForName:NSManagedObjectContextDidSaveNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification * _Nonnull note) {
+        
+    }];
+    [moc performBlock:^{
     }];
 }
 
@@ -59,6 +76,18 @@
         return model;
     }
     return nil;
+}
+
++ (void)save {
+    [[NSManagedObjectContext MR_defaultContext] MR_saveToPersistentStoreWithCompletion:^(BOOL contextDidSave, NSError * _Nullable error) {
+        if (contextDidSave) {
+            NSLog(@"%s",__FUNCTION__);
+        }
+    }];
+}
+
++ (void)saveAndWait {
+    [[NSManagedObjectContext MR_context] MR_saveToPersistentStoreAndWait];
 }
 
 @end

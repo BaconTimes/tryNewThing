@@ -14,8 +14,14 @@
 
 + (void)insertGold:(GlodModel *)glodModel;
 
++ (void)insertGolds:(NSArray<GlodModel *> *)goldArray;
+
 + (void)deleteGold:(GlodModel *)glodModel;
 
 + (void)updateGlod:(GlodModel *)glodModel;
+
++ (void)saveAndWait;
+
++ (void)save;
 
 @end

@@ -10,4 +10,9 @@
 
 @implementation GlodModel
 
+- (void)printRect;
+{
+    NSLog(@"%s",__FUNCTION__);
+}
+
 @end

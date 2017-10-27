@@ -12,6 +12,7 @@
 #import "GlodModel.h"
 #import "GoldDataCenter.h"
 #import "CircleMainViewController.h"
+#import "TouchView.h"
 
 dispatch_time_t getDispatchTimeByDate(NSDate * date)
 {
@@ -36,10 +37,41 @@ dispatch_time_t getDispatchTimeByDate(NSDate * date)
 
 @end
 
-@implementation SecondViewController
+@implementation SecondViewController {
+    NSInteger total;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+}
+
+- (void)abstractCount:(NSInteger)count fromList:(NSArray *)list {
+    NSMutableArray * path = [NSMutableArray new];
+    NSMutableArray * left = [NSMutableArray arrayWithArray:list];
+    NSMutableArray * result = [NSMutableArray new];
+    [self abstractLevel:count path:path left:left result:result];
+}
+
+- (void)abstractLevel:(NSInteger)level path:(NSMutableArray *)path left:(NSMutableArray *)left result:(NSMutableArray *)result;
+{
+    if (level == 1) {
+        for (id object in left) {
+            NSMutableArray * muArr = [NSMutableArray arrayWithArray:path];
+            [muArr addObject:object];
+            [result addObject:muArr];
+        }
+    } else {
+        for (NSInteger i = 0; i < left.count; i++) {
+            id object = left[i];
+            NSMutableArray * tmpPath = [NSMutableArray arrayWithArray:path];
+            [tmpPath addObject:object];
+            NSMutableArray * tmpLeft = [NSMutableArray arrayWithArray:[left subarrayWithRange:NSMakeRange(i + 1, left.count - i - 1)]];
+            [self abstractLevel:level - 1 path:tmpPath left:tmpLeft result:result];
+        }
+    }
+}
+
+- (void)test1 {
     [self createData];
     self.automaticallyAdjustsScrollViewInsets = NO;
     _mainTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 64, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 64) style:UITableViewStylePlain];
@@ -53,7 +85,6 @@ dispatch_time_t getDispatchTimeByDate(NSDate * date)
 
 - (void)createData {
     _dataSource = [NSMutableArray new];
-    NSMutableArray * muArray = [[NSMutableArray alloc] init];
     for (NSInteger i = 0; i < 5; i++) {
         GlodModel * gModel = [[GlodModel alloc] init];
         gModel.targetId = [NSString stringWithFormat:@"41234%@", @(i)];
@@ -62,15 +93,18 @@ dispatch_time_t getDispatchTimeByDate(NSDate * date)
         gModel.width = 1700 + i;
         gModel.weight = 65 + i;
         [_dataSource addObject:gModel];
-        [GoldDataCenter insertGold:gModel];
-        [muArray addObject:[gModel modelToJSONString]];
+//        [GoldDataCenter insertGold:gModel];
     }
     
 }
 
 - (IBAction)rightAction:(UIBarButtonItem *)sender {
+    NSArray *list = @[@1, @2, @3, @4, @5];
+    NSInteger count = 2;
+    [self abstractCount:count fromList:list];
+    return;
     NSUInteger baseNum = 15;
-    for (NSInteger i = 0; i < 5000; i++, baseNum++) {
+    for (NSInteger i = 0; i < 500; i++, baseNum++) {
         GlodModel * gModel = [[GlodModel alloc] init];
         gModel.targetId = [NSString stringWithFormat:@"41234%@", @(baseNum)];
         gModel.name = [NSString stringWithFormat:@"name%@", @(baseNum)];
@@ -82,6 +116,7 @@ dispatch_time_t getDispatchTimeByDate(NSDate * date)
 }
 
 - (IBAction)addAction:(UIBarButtonItem *)sender {
+
     for (NSInteger i = 0; i < 5000; i++) {
         GlodModel * gModel = [[GlodModel alloc] init];
         gModel.targetId = [NSString stringWithFormat:@"41234%@", @(i)];
@@ -91,7 +126,7 @@ dispatch_time_t getDispatchTimeByDate(NSDate * date)
         gModel.weight = 65 + i;
         [_dataSource addObject:gModel];
     }
-    [self refreshData];
+//    [self refreshData];
 }
 - (IBAction)trashAction:(id)sender {
     NSUInteger i = 5;

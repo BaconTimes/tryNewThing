@@ -19,14 +19,6 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     [MagicalRecord setupCoreDataStackWithAutoMigratingSqliteStoreNamed:@"ZNT_TEST.sqlite"];
     [MagicalRecord setLoggingLevel:MagicalRecordLoggingLevelWarn];
-    
-    
-    
-//    NSString * path = [[NSBundle mainBundle] pathForResource:@"TestModelOne" ofType:@"momd"];
-//    if (path == nil) {
-//        path = [[NSBundle mainBundle] pathForResource:@"TestModelOne" ofType:@"mom"];
-//    }
-//    NSLog(@"%@", path);
     return YES;
 }
 

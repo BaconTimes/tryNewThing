@@ -20,4 +20,6 @@
 
 @property (nonatomic, copy) NSString * name;
 
+- (void)printRect;
+
 @end
