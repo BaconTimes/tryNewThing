@@ -28,7 +28,12 @@
         _label = [[YYLabel alloc] initWithFrame:CGRectMake(0, 0, ([UIScreen mainScreen].bounds.size.width), 0)];
         _label.displaysAsynchronously = YES;
         _label.ignoreCommonProperties = YES;
-        _label.textTapAction = ^(UIView * _Nonnull containerView, NSAttributedString * _Nonnull text, NSRange range, CGRect rect) {
+        _label.highlightTapAction = ^(UIView * _Nonnull containerView, NSAttributedString * _Nonnull text, NSRange range, CGRect rect) {
+            NSAttributedString * attr = [text attributedSubstringFromRange:range];
+            YYTextHighlight * hight =  attr.attributes[YYTextHighlightAttributeName];
+            NSLog(@"%@", hight.userInfo);
+        };
+        _label.highlightLongPressAction = ^(UIView * _Nonnull containerView, NSAttributedString * _Nonnull text, NSRange range, CGRect rect) {
             NSAttributedString * attr = [text attributedSubstringFromRange:range];
             YYTextHighlight * hight =  attr.attributes[YYTextHighlightAttributeName];
             NSLog(@"%@", hight.userInfo);
@@ -169,9 +174,11 @@
     NSDictionary * dict = [NSDictionary dictionaryWithContentsOfFile:plistPath];
     NSRegularExpression * reg = [NSRegularExpression regularExpressionWithPattern:@"\\[[a-zA-Z0-9\\u4e00-\\u9fa5]+\\]" options:NSRegularExpressionCaseInsensitive error:nil];
     NSRegularExpression *netReg = [NSRegularExpression regularExpressionWithPattern:@"(((http[s]{0,1}|ftp)://[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?)|(www.[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?))|((https?|ftp|news)://)?([a-z]([a-z0-9\\-]*[\\.。])+([a-z]{2}|aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel)|(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))(/[a-z0-9_\\-\\.~]+)*(/([a-z0-9_\\-\\.]*)(\\?[a-z0-9+_\\-\\.%=&]*)?)?(#[a-z][a-z0-9_]*)?$" options:NSRegularExpressionCaseInsensitive error:nil];
+    NSLog(@"***start*** %s",__FUNCTION__);
     for (int i = 0; i < 60; i++) {
-        NSString *str = [NSString stringWithFormat:@"%d 永和九年， [委屈]岁在癸丑， [大哭]暮春之初， 会于会稽山阴之兰亭， 💗💛💙🏨🏦🏫修禊事也。[调皮] 群贤毕至，[可怜] 少长咸集。 www.baidu.com此地有崇山峻岭， 茂林修竹， 又有清流激湍， 映带左右， 引以为流觞曲水， 列坐其次。 虽无丝竹管弦之盛，🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖 一觞一咏， 亦足以畅叙幽情。是日也， 天朗气清， 惠风和畅。 仰观宇宙之大， 俯察品类之盛， 所以游目骋怀， 足以极视听之娱， 信可乐也。",i];
+        NSString *str = [NSString stringWithFormat:@"%d[委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜]" ,i];
         //😀😖😐😣😡🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖🚌🚋🎊💖💗💛💙🏨🏦🏫
+        //永和九年， [委屈]岁在癸丑， [大哭]暮春之初， 会于会稽山阴之兰亭， 💗💛💙🏨🏦🏫修禊事也。[调皮] 群贤毕至，[可怜] 少长咸集。 www.baidu.com此地有崇山峻岭， 茂林修竹， 又有清流激湍， 映带左右， 引以为流觞曲水， 列坐其次。 虽无丝竹管弦之盛，🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖 一觞一咏， 亦足以畅叙幽情。是日也， 天朗气清， 惠风和畅。 仰观宇宙之大， 俯察品类之盛， 所以游目骋怀， 足以极视听之娱， 信可乐也。"
         NSMutableAttributedString * muAttr = [[NSMutableAttributedString alloc] initWithString:str];
         NSArray<NSTextCheckingResult *> * results = [reg matchesInString:str options:NSMatchingWithTransparentBounds range:NSMakeRange(0, str.length)];
         for (NSInteger i = results.count - 1; i >= 0; i--) {
@@ -181,9 +188,10 @@
             if (imgName) {
                 NSString * img_path = [bundle pathForResource:imgName ofType:@"png"];
                 UIImage * img = [UIImage imageWithContentsOfFile:img_path];
-                YYAnimatedImageView * imageView = [[YYAnimatedImageView alloc] initWithImage:img];
-                imageView.frame = CGRectMake(0, 0, img.size.width, img.size.height);
-                NSAttributedString * imgAttr = [NSAttributedString attachmentStringWithContent:imageView contentMode:UIViewContentModeScaleAspectFill attachmentSize:CGSizeMake(15, 15) alignToFont:[UIFont systemFontOfSize:14] alignment:YYTextVerticalAlignmentCenter];
+//                YYAnimatedImageView * imageView = [[YYAnimatedImageView alloc] initWithImage:img];
+//                imageView.frame = CGRectMake(0, 0, img.size.width, img.size.height);
+//                NSAttributedString * imgAttr = [NSAttributedString attachmentStringWithContent:img contentMode:UIViewContentModeScaleAspectFill attachmentSize:CGSizeMake(15, 15) alignToFont:[UIFont systemFontOfSize:14] alignment:YYTextVerticalAlignmentCenter];
+                NSAttributedString * imgAttr = [NSAttributedString attachmentStringWithEmojiImage:img fontSize:26];
                 [muAttr replaceCharactersInRange:result.range withAttributedString:imgAttr];
             }
         }
@@ -194,7 +202,6 @@
             [muAttr setTextHighlightRange:result.range color:[UIColor redColor] backgroundColor:[UIColor cyanColor] userInfo:@{@1:@1}];
         }
 
-        
         [muAttr setFont:[UIFont systemFontOfSize:15]];
         muAttr.lineBreakMode = NSLineBreakByWordWrapping;
         YYTextContainer * container = [YYTextContainer containerWithSize:CGSizeMake([UIScreen mainScreen].bounds.size.width, CGFLOAT_MAX)];
@@ -203,6 +210,7 @@
         [_dataSource addObject:muAttr];
         [_layouts addObject:layout];
     }
+    NSLog(@"***end*** %s",__FUNCTION__);
 }
 
 - (void)dispatchQueue {
@@ -249,6 +257,11 @@
     cell.label.size = layout.textBoundingSize;
     cell.label.textLayout = layout;
     return cell;
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    NSLog(@"%s",__FUNCTION__);
 }
 
 - (void)didReceiveMemoryWarning {

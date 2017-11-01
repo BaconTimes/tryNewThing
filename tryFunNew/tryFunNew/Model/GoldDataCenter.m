@@ -17,21 +17,22 @@
 +(void)insertGold:(GlodModel *)glodModel {
     if (!glodModel.targetId) return;
     [MagicalRecord saveWithBlock:^(NSManagedObjectContext * _Nonnull localContext) {
-        NSLog(@"NSThread currentThread = %@", [NSThread currentThread]);
         Gold * gold = [Gold MR_findFirstOrCreateByAttribute:@"targetId" withValue:glodModel.targetId inContext:localContext];
         [self configureEntity:gold withModel:glodModel];
     } completion:^(BOOL contextDidSave, NSError * _Nullable error) {
-        NSLog(@"[Gold MR_countOfEntities] = %@", @([Gold MR_countOfEntities]));
+//        NSLog(@"[Gold MR_countOfEntities] = %@", @([Gold MR_countOfEntities]));
     }];
 }
 
 + (void)insertGolds:(NSArray<GlodModel *> *)goldArray {
     if (goldArray.count == 0) return;
-    NSManagedObjectContext * moc = [NSManagedObjectContext MR_context];
-    [[NSNotificationCenter defaultCenter] addObserverForName:NSManagedObjectContextDidSaveNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification * _Nonnull note) {
-        
-    }];
-    [moc performBlock:^{
+    [MagicalRecord saveWithBlock:^(NSManagedObjectContext * _Nonnull localContext) {
+        for (GlodModel * gModel in goldArray) {
+            Gold * gold = [Gold MR_findFirstOrCreateByAttribute:@"targetId" withValue:gModel.targetId inContext:localContext];
+            [self configureEntity:gold withModel:gModel];
+        }
+    } completion:^(BOOL contextDidSave, NSError * _Nullable error) {
+        NSLog(@"%s",__FUNCTION__);
     }];
 }
 
