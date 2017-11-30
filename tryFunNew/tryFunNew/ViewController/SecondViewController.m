@@ -14,6 +14,8 @@
 #import "CircleMainViewController.h"
 #import "TouchView.h"
 #import "MRCTest.h"
+#import "HTTPServer.h"
+#import "MyHTTPConnection.h"
 
 dispatch_time_t getDispatchTimeByDate(NSDate * date)
 {
@@ -30,7 +32,10 @@ dispatch_time_t getDispatchTimeByDate(NSDate * date)
     return milestone;
 }
 
-@interface SecondViewController ()<UITableViewDelegate, UITableViewDataSource, NSFetchedResultsControllerDelegate>
+@interface SecondViewController ()<
+UITableViewDelegate,
+UITableViewDataSource,
+NSFetchedResultsControllerDelegate>
 
 @property (nonatomic, strong) UITableView * mainTableView;
 
@@ -42,11 +47,38 @@ dispatch_time_t getDispatchTimeByDate(NSDate * date)
 
 @implementation SecondViewController {
     NSInteger total;
+    HTTPServer * httpServer;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.view.backgroundColor = [UIColor cyanColor];
+    
+//    UIButton * btn = [UIButton buttonWithType:UIButtonTypeCustom];
+//    [self.view addSnslubview:btn];
+//    btn.frame = CGRectMake(50, 100, 200, 100);
+//    NSTextAttachment * attach = [[NSTextAttachment alloc] init];
+//    attach.image = [UIImage imageNamed:@"about@2x.png"];
+//    NSAttributedString * attr = [NSAttributedString attributedStringWithAttachment:attach];
+//    [btn setAttributedTitle:attr forState:UIControlStateNormal];
     [self test1];
+    [self netWorkFileUpload];
+}
+
+- (void)netWorkFileUpload {
+    httpServer = [[HTTPServer alloc] init];
+    [httpServer setType:@"_http._tcp."];
+    NSString * webPath = [[NSBundle mainBundle] resourcePath];
+    [httpServer setDocumentRoot:webPath];
+    [httpServer setPort:12345];
+    [httpServer setConnectionClass:[MyHTTPConnection class]];
+    NSError * err; //  442  curl -H "Content-type: application/json" -X POST http://10.100.23.49:5000/todo/api/v1.0/tasks -d '{"message":"Hello Data"}'
+
+    if ([httpServer start:&err]) {
+        NSLog(@"port %hu", [httpServer listeningPort]);
+    }else {
+        NSLog(@"err is %@", err);
+    }
 }
 
 - (void)test1 {
@@ -106,7 +138,8 @@ dispatch_time_t getDispatchTimeByDate(NSDate * date)
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    [self.navigationController pushViewController:[NSClassFromString(@"ThirdViewController") new] animated:YES];
+    
+    [self.navigationController pushViewController:[NSClassFromString(@"CircleMainViewController") new] animated:YES];
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -158,7 +191,6 @@ dispatch_time_t getDispatchTimeByDate(NSDate * date)
 }
 
 - (IBAction)addAction:(UIBarButtonItem *)sender {
-
     for (NSInteger i = 0; i < 1; i++) {
         GlodModel * gModel = [[GlodModel alloc] init];
         gModel.targetId = [NSString stringWithFormat:@"41132234%@", @(i)];

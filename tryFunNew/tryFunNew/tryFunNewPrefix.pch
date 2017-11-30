@@ -13,4 +13,6 @@
 #import <MagicalRecord/MagicalRecord.h>
 #import <YYKit.h>
 
+#define SQLITEPATHKEY @"SQLITEPATHKEY"
+
 #endif /* tryFunNewPrefix_pch */

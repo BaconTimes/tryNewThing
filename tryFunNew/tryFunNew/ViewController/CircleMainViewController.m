@@ -22,6 +22,8 @@
 
 @property (nonatomic, strong) CircleInfoViewController * circleInfoVC;
 
+@property (nonatomic, strong) NSArray <UIViewController *> * vcArrays;
+
 @end
 
 @implementation CircleMainViewController
@@ -31,29 +33,36 @@
     self.view.backgroundColor = [UIColor cyanColor];
     self.automaticallyAdjustsScrollViewInsets = NO;
     
-    _mainScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 64, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 64)];
-    [self.view addSubview:_mainScrollView];
-    _mainScrollView.pagingEnabled = YES;
-    _mainScrollView.backgroundColor = [UIColor yellowColor];
+    //    _mainScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 64, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 64)];
+    //    [self.view addSubview:_mainScrollView];
+    //    _mainScrollView.pagingEnabled = YES;
+    //    _mainScrollView.backgroundColor = [UIColor yellowColor];
     
     _normalPostVC = [NormalPostViewController new];
     _perfectPostVC = [PerfectPostViewController new];
     _circleInfoVC = [CircleInfoViewController new];
     
-    NSArray <UIViewController *> * vcArrays = @[_normalPostVC, _perfectPostVC, _circleInfoVC];
+    _vcArrays = @[_normalPostVC, _perfectPostVC, _circleInfoVC];
     NSArray <UIColor *>* cArray = @[[UIColor redColor], [UIColor blueColor], [UIColor greenColor]];
-    for (NSUInteger i = 0; i < vcArrays.count; i++) {
-        UIViewController * viewController = vcArrays[i];
+    for (NSUInteger i = 0; i < _vcArrays.count; i++) {
+        UIViewController * viewController = _vcArrays[i];
         [self addChildViewController:viewController];
         UIView * view = viewController.view;
-        view.frame = CGRectMake(_mainScrollView.width * i, 0, _mainScrollView.width, _mainScrollView.height);
+        view.frame = CGRectMake(0, 64, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height - 64);
         view.backgroundColor = cArray[i];
-        [_mainScrollView addSubview:view];
+        [self.view addSubview:view];
     }
-    
-    _mainScrollView.contentSize = CGSizeMake(_mainScrollView.width * vcArrays.count, _mainScrollView.height);
-
+    //    _mainScrollView.contentSize = CGSizeMake(_mainScrollView.width * vcArrays.count, _mainScrollView.height);
+    UISegmentedControl * seg = [[UISegmentedControl alloc] initWithItems:@[@"1", @"2", @"3"]];
+    [seg addTarget:self action:@selector(segSelected:) forControlEvents:UIControlEventValueChanged];
+    self.navigationItem.titleView = seg;
 }
+
+- (void)segSelected:(UISegmentedControl *)seg {
+    NSLog(@"%s %@",__FUNCTION__, @(seg.selectedSegmentIndex));
+    [self.view bringSubviewToFront:_vcArrays[seg.selectedSegmentIndex].view];
+}
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

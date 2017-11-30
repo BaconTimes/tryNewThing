@@ -8,6 +8,25 @@
 
 #import "EmojiManager.h"
 
+#define REGULAREXPRESSION_OPTION(regularExpression,regex,option) \
+\
+static NSRegularExpression * k##regularExpression() { \
+static NSRegularExpression *_##regularExpression = nil; \
+static dispatch_once_t onceToken; \
+dispatch_once(&onceToken, ^{ \
+_##regularExpression = [[NSRegularExpression alloc] initWithPattern:(regex) options:(option) error:nil];\
+});\
+\
+return _##regularExpression;\
+}\
+
+#define REGULAREXPRESSION(regularExpression,regex) REGULAREXPRESSION_OPTION(regularExpression,regex,NSRegularExpressionCaseInsensitive)
+
+
+REGULAREXPRESSION(URLRegularExpression,@"((http[s]{0,1}|ftp)://[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,6})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?)|(www.[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,6})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?)|(((http[s]{0,1}|ftp)://|)((?:(?:25[0-5]|2[0-4]\\d|((1\\d{2})|([1-9]?\\d)))\\.){3}(?:25[0-5]|2[0-4]\\d|((1\\d{2})|([1-9]?\\d))))(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?)")
+REGULAREXPRESSION(PhoneNumerRegularExpression, @"\\d{3}-\\d{8}|\\d{3}-\\d{7}|\\d{4}-\\d{8}|\\d{4}-\\d{7}|1+[3578]+\\d{9}|[+]861+[3578]+\\d{9}|861+[3578]+\\d{9}|1+[3578]+\\d{1}-\\d{4}-\\d{4}|\\d{8}|\\d{7}|400-\\d{3}-\\d{4}|400-\\d{4}-\\d{3}")
+
+
 #define EMOJIBUNDLENAME @"emotion.bundle"
 #define EMOJIPLISTNAME @"emoji.plist"
 #define EMOJIFONTSIZE (16.0f)
@@ -31,6 +50,7 @@ static EmojiManager * _manager;
 @interface EmojiManager()
 @property (nonatomic, strong) NSMutableDictionary *expressionMapRecords;
 @property (nonatomic, strong) NSMutableDictionary *expressionRegularExpressionRecords;
+@property (nonatomic, strong) NXExpression * defaultExpress;
 @end
 
 @implementation EmojiManager
@@ -44,13 +64,11 @@ static EmojiManager * _manager;
     return _sharedInstance;
 }
 
-- (instancetype)init
-{
-    self = [super init];
-    if (self) {
+- (NXExpression *)defaultExpress {
+    if (_defaultExpress == nil) {
         _defaultExpress = [NXExpression expressionWithRegex:EMOJIREG plistName:EMOJIPLISTNAME bundleName:EMOJIBUNDLENAME fontSize:EMOJIFONTSIZE];
     }
-    return self;
+    return _defaultExpress;
 }
 
 #pragma mark - getter
@@ -106,7 +124,7 @@ static EmojiManager * _manager;
 //多线程转表情attrStr
 + (NSArray *)expressionAttributedStringsWithStrings:(NSArray*)strings expression:(NXExpression*)expression
 {
-    if (expression == nil) expression = _manager.defaultExpress;
+    if (expression == nil) expression = [EmojiManager sharedInstance].defaultExpress;
     NSMutableDictionary *results = [NSMutableDictionary dictionaryWithCapacity:strings.count];
     
     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
@@ -132,7 +150,7 @@ static EmojiManager * _manager;
 
 + (void)expressionAttributedStringsWithStrings:(NSArray*)strings expression:(NXExpression*)expression callback:(void(^)(NSArray *result))callback
 {
-    if (expression == nil) expression = _manager.defaultExpress;
+    if (expression == nil) expression = [EmojiManager sharedInstance].defaultExpress;
     NSMutableDictionary *results = [NSMutableDictionary dictionaryWithCapacity:strings.count];
     
     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
@@ -162,7 +180,7 @@ static EmojiManager * _manager;
 }
 
 + (NSAttributedString*)expressionAttributedStringWithString:(id)string expression:(NXExpression*)expression {
-    if (expression == nil) expression = _manager.defaultExpress;
+    if (expression == nil) expression = [EmojiManager sharedInstance].defaultExpress;
     NSAssert(expression&&[expression isValid], @"expression invalid");
     NSAssert([string isKindOfClass:[NSString class]]||[string isKindOfClass:[NSAttributedString class]], @"string非字符串. %@",string);
     
@@ -224,6 +242,39 @@ static EmojiManager * _manager;
     return resultAttributedString;
 }
 
++ (NSMutableAttributedString *)detectLink:(id)string color:(UIColor *)color backgroundColor:(UIColor *)backgroundColor {
+    if (string == nil) return nil;
+    NSMutableAttributedString * muAttr = [[NSMutableAttributedString alloc] init];
+    if ([string isKindOfClass:[NSString class]])
+        [muAttr appendString:(NSString *)string];
+    else if ([string isKindOfClass:[NSAttributedString class]])
+        [muAttr appendAttributedString:(NSAttributedString *)string];
+    NSString *totalString = muAttr.string;
+    NSArray<NSTextCheckingResult *> * urlResults = [kURLRegularExpression() matchesInString:totalString options:NSMatchingWithTransparentBounds range:NSMakeRange(0,totalString.length)];
+    NSMutableArray <NSValue *> * rangeArray = [NSMutableArray arrayWithCapacity:urlResults.count];
+    for (NSTextCheckingResult * result in urlResults) {
+        [rangeArray addObject:[NSValue valueWithRange:result.range]];
+        [muAttr setTextHighlightRange:result.range color:color backgroundColor:backgroundColor userInfo:nil];
+    }
+    NSArray<NSTextCheckingResult *> * phoneResults = [kPhoneNumerRegularExpression() matchesInString:totalString options:NSMatchingWithTransparentBounds range:NSMakeRange(0,totalString.length)];
+    for (NSTextCheckingResult * result in phoneResults) {
+        BOOL isIntersected = NO;
+        for (NSValue * rangeValue in rangeArray) {
+            NSRange linkRange = [rangeValue rangeValue];
+            if (NSMaxRange(NSIntersectionRange(linkRange, result.range))>0) {
+                isIntersected = YES;
+                break;
+            }
+        }
+        if (isIntersected) {
+            continue;
+        } else {
+            [muAttr setTextHighlightRange:result.range color:color backgroundColor:backgroundColor userInfo:nil];
+        }
+    }
+    return muAttr;
+}
+
 @end
 
 @implementation NXExpression
@@ -273,9 +324,6 @@ static EmojiManager * _manager;
     if (![[_bundleName lowercaseString] hasSuffix:@".bundle"]) {
         _bundleName = [_bundleName stringByAppendingString:@".bundle"];
     }
-    
-    //TODO: 这个最好验证下存在性，后期搞
 }
-
 
 @end

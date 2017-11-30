@@ -8,7 +8,11 @@
 
 #import "AppDelegate.h"
 #import <MagicalRecord/MagicalRecord.h>
-
+#import "HYBIPHelper.h"
+#import "MyHTTPConnection.h"
+#import "HTTPServer.h"
+#import "DDLog.h"
+#import "DDTTYLogger.h"
 @interface AppDelegate ()
 
 @end
@@ -17,8 +21,14 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    [DDLog addLogger: [DDTTYLogger sharedInstance]];
     [MagicalRecord setupCoreDataStackWithAutoMigratingSqliteStoreNamed:@"ZNT_TEST.sqlite"];
     [MagicalRecord setLoggingLevel:MagicalRecordLoggingLevelWarn];
+    [HYBIPHelper deviceIPAddress];
+    NSURL * url = [NSPersistentStore MR_urlForStoreName:@"ZNT_TEST.sqlite"];
+    NSLog(@"%@", url.absoluteString);
+    [[NSUserDefaults standardUserDefaults] setObject:url.absoluteString forKey:SQLITEPATHKEY];
     return YES;
 }
 

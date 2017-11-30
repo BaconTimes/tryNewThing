@@ -13,6 +13,8 @@
 #import <YYKit.h>
 #import <mach/mach_host.h>
 #import "TestRequest.h"
+#import "EmojiManager.h"
+
 
 @interface TestCell : UITableViewCell
 
@@ -64,8 +66,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    self.automaticallyAdjustsScrollViewInsets = NO;
-    [self asycLabel];
+    NSString * h5Path = [[NSBundle mainBundle] pathForResource:@"upload" ofType:@"html"];
+    h5Path = [h5Path stringByDeletingLastPathComponent];
+    NSLog(@"h5Path = %@", h5Path);
 }
 
 - (UIImage*)imageCompressWithSimple:(UIImage*)image scaledToSize:(CGSize)size
@@ -168,45 +171,23 @@
     _dataSource = [[NSMutableArray alloc] init];
     _layouts = [[NSMutableArray alloc] init];
     
-    NSString * bundlePath = [[NSBundle mainBundle] pathForResource:@"emotion" ofType:@"bundle"];
-    NSBundle *bundle = [NSBundle bundleWithPath:bundlePath];
-    NSString * plistPath = [[NSBundle mainBundle] pathForResource:@"emoji" ofType:@"plist"];
-    NSDictionary * dict = [NSDictionary dictionaryWithContentsOfFile:plistPath];
-    NSRegularExpression * reg = [NSRegularExpression regularExpressionWithPattern:@"\\[[a-zA-Z0-9\\u4e00-\\u9fa5]+\\]" options:NSRegularExpressionCaseInsensitive error:nil];
     NSRegularExpression *netReg = [NSRegularExpression regularExpressionWithPattern:@"(((http[s]{0,1}|ftp)://[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?)|(www.[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?))|((https?|ftp|news)://)?([a-z]([a-z0-9\\-]*[\\.。])+([a-z]{2}|aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel)|(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))(/[a-z0-9_\\-\\.~]+)*(/([a-z0-9_\\-\\.]*)(\\?[a-z0-9+_\\-\\.%=&]*)?)?(#[a-z][a-z0-9_]*)?$" options:NSRegularExpressionCaseInsensitive error:nil];
     NSLog(@"***start*** %s",__FUNCTION__);
     for (int i = 0; i < 60; i++) {
-        NSString *str = [NSString stringWithFormat:@"%d[委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜][委屈][大哭][调皮][可怜]" ,i];
+        NSString *str = [NSString stringWithFormat:@"%d永和九年， [委屈]岁在癸丑， [大哭]暮春之初， 会于会稽山阴之兰亭， 💗💛💙🏨🏦🏫修禊事也。[调皮] 群贤毕至，[可怜] 少长咸集。 www.baidu.com此地有崇山峻岭， 茂林修竹， 又有清流激湍， 映带左右， 引以为流觞曲水， 列坐其次。 虽无丝竹管弦之盛，🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖 一觞一咏， 亦足以畅叙幽情。是日也， 天朗气清， 惠风和畅。 仰观宇宙之大， 俯察品类之盛， 所以游目骋怀， 足以极视听之娱， 信可乐也。" ,i];
         //😀😖😐😣😡🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖🚌🚋🎊💖💗💛💙🏨🏦🏫
-        //永和九年， [委屈]岁在癸丑， [大哭]暮春之初， 会于会稽山阴之兰亭， 💗💛💙🏨🏦🏫修禊事也。[调皮] 群贤毕至，[可怜] 少长咸集。 www.baidu.com此地有崇山峻岭， 茂林修竹， 又有清流激湍， 映带左右， 引以为流觞曲水， 列坐其次。 虽无丝竹管弦之盛，🚖🚌🚋🎊💖💗💛💙🏨🏦🏫😀😖😐😣😡🚖 一觞一咏， 亦足以畅叙幽情。是日也， 天朗气清， 惠风和畅。 仰观宇宙之大， 俯察品类之盛， 所以游目骋怀， 足以极视听之娱， 信可乐也。"
-        NSMutableAttributedString * muAttr = [[NSMutableAttributedString alloc] initWithString:str];
-        NSArray<NSTextCheckingResult *> * results = [reg matchesInString:str options:NSMatchingWithTransparentBounds range:NSMakeRange(0, str.length)];
-        for (NSInteger i = results.count - 1; i >= 0; i--) {
-            NSTextCheckingResult * result = results[i];
-            NSString * resultString = [str substringWithRange:result.range];
-            NSString * imgName = dict[resultString];
-            if (imgName) {
-                NSString * img_path = [bundle pathForResource:imgName ofType:@"png"];
-                UIImage * img = [UIImage imageWithContentsOfFile:img_path];
-//                YYAnimatedImageView * imageView = [[YYAnimatedImageView alloc] initWithImage:img];
-//                imageView.frame = CGRectMake(0, 0, img.size.width, img.size.height);
-//                NSAttributedString * imgAttr = [NSAttributedString attachmentStringWithContent:img contentMode:UIViewContentModeScaleAspectFill attachmentSize:CGSizeMake(15, 15) alignToFont:[UIFont systemFontOfSize:14] alignment:YYTextVerticalAlignmentCenter];
-                NSAttributedString * imgAttr = [NSAttributedString attachmentStringWithEmojiImage:img fontSize:26];
-                [muAttr replaceCharactersInRange:result.range withAttributedString:imgAttr];
-            }
-        }
-        str = muAttr.string;
-        results = [netReg matchesInString:str options:NSMatchingWithTransparentBounds range:NSMakeRange(0, str.length)];
-        for (NSInteger i = results.count - 1; i >= 0; i--) {
-            NSTextCheckingResult * result = results[i];
-            [muAttr setTextHighlightRange:result.range color:[UIColor redColor] backgroundColor:[UIColor cyanColor] userInfo:@{@1:@1}];
-        }
+        //"
+        NSMutableAttributedString * muAttr = [[NSMutableAttributedString alloc] initWithAttributedString:[EmojiManager expressionAttributedStringWithString:str expression:nil]];
+        
+        muAttr = [EmojiManager detectLink:muAttr color:[UIColor redColor] backgroundColor:[UIColor cyanColor]];
 
         [muAttr setFont:[UIFont systemFontOfSize:15]];
+        [muAttr setColor:[UIColor blueColor]];
         muAttr.lineBreakMode = NSLineBreakByWordWrapping;
-        YYTextContainer * container = [YYTextContainer containerWithSize:CGSizeMake([UIScreen mainScreen].bounds.size.width, CGFLOAT_MAX)];
-        container.maximumNumberOfRows = 4;
-        YYTextLayout * layout = [YYTextLayout layoutWithContainer:container text:muAttr];
+//        YYTextContainer * container = [YYTextContainer containerWithSize:CGSizeMake([UIScreen mainScreen].bounds.size.width, CGFLOAT_MAX)];
+//        container.maximumNumberOfRows = 4;
+//        YYTextLayout * layout = [YYTextLayout layoutWithContainer:container text:muAttr];
+        YYTextLayout * layout = [YYTextLayout layoutWithContainerSize:CGSizeMake([UIScreen mainScreen].bounds.size.width, CGFLOAT_MAX) text:muAttr];
         [_dataSource addObject:muAttr];
         [_layouts addObject:layout];
     }

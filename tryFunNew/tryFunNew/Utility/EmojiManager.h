@@ -35,5 +35,5 @@
 + (NSArray *)expressionAttributedStringsWithStrings:(NSArray*)strings expression:(NXExpression*)expression;
 //同上，但是以回调方式返回
 + (void)expressionAttributedStringsWithStrings:(NSArray*)strings expression:(NXExpression*)expression callback:(void(^)(NSArray *result))callback;
-
++ (NSMutableAttributedString *)detectLink:(id)string color:(UIColor *)color backgroundColor:(UIColor *)backgroundColor;
 @end
