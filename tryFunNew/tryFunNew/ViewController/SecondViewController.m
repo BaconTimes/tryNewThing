@@ -16,6 +16,9 @@
 #import "MRCTest.h"
 #import "HTTPServer.h"
 #import "MyHTTPConnection.h"
+#import <WebKit/WebKit.h>
+#import <AVFoundation/AVFoundation.h>
+static NSString * evaluateJsH5Content = @"document.documentElement.innerHTML";
 
 dispatch_time_t getDispatchTimeByDate(NSDate * date)
 {
@@ -35,7 +38,9 @@ dispatch_time_t getDispatchTimeByDate(NSDate * date)
 @interface SecondViewController ()<
 UITableViewDelegate,
 UITableViewDataSource,
-NSFetchedResultsControllerDelegate>
+NSFetchedResultsControllerDelegate,
+WKNavigationDelegate,
+AVCaptureMetadataOutputObjectsDelegate>
 
 @property (nonatomic, strong) UITableView * mainTableView;
 
@@ -43,26 +48,66 @@ NSFetchedResultsControllerDelegate>
 
 @property (nonatomic, strong) NSFetchedResultsController * fetchedResultsController;
 
+@property (nonatomic, strong) WKWebView *webView;
+
+@property (nonatomic, strong) UIWebView * web;
+
+@property (nonatomic, strong) AVCaptureSession * session;
+@property (nonatomic, strong) AVCaptureVideoPreviewLayer * previewLayer;
+
 @end
 
 @implementation SecondViewController {
     NSInteger total;
     HTTPServer * httpServer;
+    GlodModel * _gModel;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor cyanColor];
     
-//    UIButton * btn = [UIButton buttonWithType:UIButtonTypeCustom];
-//    [self.view addSnslubview:btn];
-//    btn.frame = CGRectMake(50, 100, 200, 100);
-//    NSTextAttachment * attach = [[NSTextAttachment alloc] init];
-//    attach.image = [UIImage imageNamed:@"about@2x.png"];
-//    NSAttributedString * attr = [NSAttributedString attributedStringWithAttachment:attach];
-//    [btn setAttributedTitle:attr forState:UIControlStateNormal];
-    [self test1];
-    [self netWorkFileUpload];
+    AVCaptureDevice * device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    AVCaptureDeviceInput * input = [AVCaptureDeviceInput deviceInputWithDevice:device error:nil];
+    AVCaptureMetadataOutput * output = [[AVCaptureMetadataOutput alloc]init];
+    [output setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
+    output.rectOfInterest = CGRectMake(50, 50, 50, 50);
+    self.session = [[AVCaptureSession alloc]init];
+    [self.session setSessionPreset:AVCaptureSessionPresetHigh];
+    if ([self.session canAddInput:input]) {
+        [self.session addInput:input];
+    }
+    if ([self.session canAddOutput:output]) {
+        [self.session addOutput:output];
+    }
+    output.metadataObjectTypes = @[AVMetadataObjectTypeQRCode];
+    self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.session];
+    self.previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    self.previewLayer.backgroundColor = [UIColor redColor].CGColor;
+    self.previewLayer.frame = self.view.frame;
+    [self.view.layer insertSublayer:self.previewLayer atIndex:0];
+    [self.session startRunning];
+}
+
+-(void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects fromConnection:(AVCaptureConnection *)connection{
+    
+//    [self.session stopRunning];
+}
+
+-(void)viewWillLayoutSubviews {
+    _web.frame = self.view.bounds;
+}
+
+- (void)testBlockCopy {
+    _gModel = [GlodModel new];
+    _gModel.height = 2;
+    _gModel.name = @"hehe";
+    NSLog(@"main _gModel.address%p", _gModel);
+    void(^testblk)()= ^{
+        NSLog(@"blk _gModel.address%p", _gModel);
+    };
+    testblk();
+    NSLog(@"_gModel.height = %@", @(_gModel.height));
 }
 
 - (void)netWorkFileUpload {

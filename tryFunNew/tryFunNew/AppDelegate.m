@@ -27,7 +27,7 @@
     [MagicalRecord setLoggingLevel:MagicalRecordLoggingLevelWarn];
     [HYBIPHelper deviceIPAddress];
     NSURL * url = [NSPersistentStore MR_urlForStoreName:@"ZNT_TEST.sqlite"];
-    NSLog(@"%@", url.absoluteString);
+    NSLog(@"(url)?:@YES = %@", (url)?:@YES);
     [[NSUserDefaults standardUserDefaults] setObject:url.absoluteString forKey:SQLITEPATHKEY];
     return YES;
 }
